@@ -15,16 +15,15 @@ type Config struct {
 }
 
 func main() {
+	configFile := flag.String("config", "config.toml", "HDPath")
+	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
 	flag.Parse()
 	args := flag.Args()
-	hdpath := wallet.DefaultPath
 	if len(args) < 1 {
-		fmt.Println("No hdpath supplied. Use", hdpath)
-	} else {
-		hdpath = args[0]
+		panic("No filename supplied.")
 	}
 
-	file, err := ioutil.ReadFile("config.toml")
+	file, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	account, err := seed.Derive(hdpath)
+	account, err := seed.Derive(*hdpath)
 	if err != nil {
 		panic(err)
 	}
