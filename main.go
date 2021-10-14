@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/fathens/tictoken/dapp"
 	"github.com/fathens/tictoken/wallet"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -32,7 +32,7 @@ func main() {
 	account := setupAccount(mnemonic, *hdpath)
 	fmt.Println(account.Address())
 
-	contracts, err := compile(*solc, fileName)
+	contracts, err := dapp.Compile(*solc, fileName)
 	if err != nil {
 		panic(err)
 	}
@@ -63,16 +63,4 @@ func setupAccount(mnemonic, hdpath string) wallet.Account {
 		panic(err)
 	}
 	return account
-}
-
-func compile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
-	solidity, err := compiler.SolidityVersion(solcCmd)
-	if err != nil {
-		return nil, err
-	}
-	contracts, err := compiler.CompileSolidity(solidity.Path, srcPath)
-	if err != nil {
-		return nil, err
-	}
-	return contracts, nil
 }
