@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/fathens/tictoken/wallet"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -15,16 +16,31 @@ type Config struct {
 }
 
 func main() {
+	configFile := flag.String("config", "config.toml", "Path of config")
+	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
+	solc := flag.String("solc", "solc", "solc command")
 	flag.Parse()
 	args := flag.Args()
-	hdpath := wallet.DefaultPath
 	if len(args) < 1 {
-		fmt.Println("No hdpath supplied. Use", hdpath)
-	} else {
-		hdpath = args[0]
+		panic("No filename supplied.")
 	}
+	fileName := args[0]
+	cfg := readConfig(*configFile)
+	fmt.Println("config =", cfg)
 
-	file, err := ioutil.ReadFile("config.toml")
+	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
+	account := setupAccount(mnemonic, *hdpath)
+	fmt.Println(account.Address())
+
+	contracts, err := compile(*solc, fileName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(contracts)
+}
+
+func readConfig(path string) Config {
+	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
@@ -34,20 +50,29 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	return cfg
+}
 
-	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
+func setupAccount(mnemonic, hdpath string) wallet.Account {
 	seed, err := wallet.InitByMnemonic(mnemonic)
 	if err != nil {
 		panic(err)
 	}
-
 	account, err := seed.Derive(hdpath)
 	if err != nil {
 		panic(err)
 	}
-	address, err := account.Address()
+	return account
+}
+
+func compile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
+	solidity, err := compiler.SolidityVersion(solcCmd)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	fmt.Println(address)
+	contracts, err := compiler.CompileSolidity(solidity.Path, srcPath)
+	if err != nil {
+		return nil, err
+	}
+	return contracts, nil
 }
