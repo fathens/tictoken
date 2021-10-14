@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/fathens/tictoken/wallet"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -17,6 +18,7 @@ type Config struct {
 func main() {
 	configFile := flag.String("config", "config.toml", "Path of config")
 	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
+	solc := flag.String("solc", "solc", "solc command")
 	flag.Parse()
 	args := flag.Args()
 	if len(args) < 1 {
@@ -30,7 +32,11 @@ func main() {
 	account := setupAccount(mnemonic, *hdpath)
 	fmt.Println(account.Address())
 
-	compile(fileName)
+	contracts, err := compile(*solc, fileName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(contracts)
 }
 
 func readConfig(path string) Config {
@@ -59,6 +65,14 @@ func setupAccount(mnemonic, hdpath string) wallet.Account {
 	return account
 }
 
-func compile(path string) {
-	fmt.Println("Compiling ", path)
+func compile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
+	solidity, err := compiler.SolidityVersion(solcCmd)
+	if err != nil {
+		return nil, err
+	}
+	contracts, err := compiler.CompileSolidity(solidity.Path, srcPath)
+	if err != nil {
+		return nil, err
+	}
+	return contracts, nil
 }
