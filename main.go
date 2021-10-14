@@ -69,14 +69,12 @@ func setupAccount(mnemonic, hdpath string) wallet.Account {
 
 func deploy(config Config, account wallet.Account, solc string, args []string) {
 	fmt.Println("Exec deploy command: ", args)
-	if len(args) < 3 {
-		panic("filename, tokenName and tokenSymbol must be supplied.")
+	if len(args) < 1 {
+		panic("filename must be supplied.")
 	}
 	fileName := args[0]
-	tokenName := args[1]
-	tokenSymbol := args[2]
 
-	contractAddr, err := dapp.DeployFromSrc(account, solc, fileName, tokenName, tokenSymbol)
+	contractAddr, err := dapp.DeployFromSrc(account, solc, fileName, args[1:])
 	if err != nil {
 		panic(err)
 	}

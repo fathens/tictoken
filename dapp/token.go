@@ -13,21 +13,29 @@ import (
 	"github.com/fathens/tictoken/wallet"
 )
 
-func DeployFromSrc(account wallet.Account, solcCmd, srcPath, tokenName, tokenSymbol string) (common.Address, error) {
+func DeployFromSrc(
+	account wallet.Account,
+	solcCmd, srcPath string,
+	args []string,
+) (common.Address, error) {
 	empty := common.Address{}
-	contracts, err := Compile(solcCmd, srcPath)
+	contracts, err := compileFile(solcCmd, srcPath)
 	if err != nil {
 		return empty, err
 	}
+	params := make([]interface{}, len(args))
+	for i, s := range args {
+		params[i] = s
+	}
 	for key, contract := range contracts {
 		if strings.HasPrefix(key, srcPath) {
-			return DeployToken(account, contract, tokenName, tokenSymbol)
+			return deployContract(account, contract, params...)
 		}
 	}
 	return empty, nil
 }
 
-func Compile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
+func compileFile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
 	solidity, err := compiler.SolidityVersion(solcCmd)
 	if err != nil {
 		return nil, err
@@ -39,7 +47,11 @@ func Compile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
 	return contracts, nil
 }
 
-func DeployToken(account wallet.Account, contract *compiler.Contract, tokenName, tokenSymbol string) (common.Address, error) {
+func deployContract(
+	account wallet.Account,
+	contract *compiler.Contract,
+	params ...interface{},
+) (common.Address, error) {
 	empty := common.Address{}
 	rawAbi, err := json.Marshal(contract.Info.AbiDefinition)
 	if err != nil {
@@ -62,8 +74,7 @@ func DeployToken(account wallet.Account, contract *compiler.Contract, tokenName,
 		abi,
 		code,
 		nil,
-		tokenName,
-		tokenSymbol,
+		params...,
 	)
 	if err != nil {
 		return empty, err
