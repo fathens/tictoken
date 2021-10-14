@@ -15,15 +15,26 @@ type Config struct {
 }
 
 func main() {
-	configFile := flag.String("config", "config.toml", "HDPath")
+	configFile := flag.String("config", "config.toml", "Path of config")
 	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
 	flag.Parse()
 	args := flag.Args()
 	if len(args) < 1 {
 		panic("No filename supplied.")
 	}
+	fileName := args[0]
+	cfg := readConfig(*configFile)
+	fmt.Println("config =", cfg)
 
-	file, err := ioutil.ReadFile(*configFile)
+	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
+	account := setupAccount(mnemonic, *hdpath)
+	fmt.Println(account.Address())
+
+	compile(fileName)
+}
+
+func readConfig(path string) Config {
+	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
@@ -33,20 +44,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	return cfg
+}
 
-	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
+func setupAccount(mnemonic, hdpath string) wallet.Account {
 	seed, err := wallet.InitByMnemonic(mnemonic)
 	if err != nil {
 		panic(err)
 	}
+	account, err := seed.Derive(hdpath)
+	if err != nil {
+		panic(err)
+	}
+	return account
+}
 
-	account, err := seed.Derive(*hdpath)
-	if err != nil {
-		panic(err)
-	}
-	address, err := account.Address()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(address)
+func compile(path string) {
+	fmt.Println("Compiling ", path)
 }

@@ -55,7 +55,6 @@ func (a Account) PublicKey() ecdsa.PublicKey {
 	return a.privateKey.PublicKey
 }
 
-func (a Account) Address() (common.Address, error) {
-	pubkey := a.PublicKey()
-	return crypto.PubkeyToAddress(pubkey), nil
+func (a Account) Address() common.Address {
+	return crypto.PubkeyToAddress(a.PublicKey())
 }
