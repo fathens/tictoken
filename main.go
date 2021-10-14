@@ -32,11 +32,11 @@ func main() {
 	account := setupAccount(mnemonic, *hdpath)
 	fmt.Println(account.Address())
 
-	contracts, err := dapp.Compile(*solc, fileName)
+	contractAddr, err := dapp.DeployFromSrc(account, *solc, fileName, "", "")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(contracts)
+	fmt.Println(contractAddr)
 }
 
 func readConfig(path string) Config {
