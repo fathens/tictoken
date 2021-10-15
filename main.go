@@ -12,7 +12,7 @@ import (
 )
 
 type Config struct {
-	RpcServer string
+	RpcServer  string
 	PrivateKey string
 }
 
@@ -45,9 +45,12 @@ func main() {
 	fmt.Println("account:", account.Address())
 
 	switch cmd {
-	case "deploy": deploy(cfg, account, *solc, args)
-	case "invoke": invoke(cfg, account, args)
-	default: panic(fmt.Sprintf("Unsupported command: %v", cmd))
+	case "deploy":
+		deploy(cfg, account, *solc, args)
+	case "invoke":
+		invoke(cfg, account, args)
+	default:
+		panic(fmt.Sprintf("Unsupported command: %v", cmd))
 	}
 }
 
