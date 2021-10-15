@@ -74,7 +74,7 @@ func setupAccount(mnemonic, hdpath string) wallet.Account {
 	if err != nil {
 		panic(err)
 	}
-	return account
+	return *account
 }
 
 func deploy(config Config, account wallet.Account, solc string, args []string) {
