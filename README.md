@@ -7,7 +7,7 @@ Solidity のソースをコンパイルして ethereum にデプロイするツ�
 main.go を起点とする。
 
 ```shell
-go run main.go [options] <command> [args]
+go run main.go [options] <command> [args ...]
 ```
 
 与えられるオプションは以下の通り
@@ -43,7 +43,7 @@ privatekey = "<hex of ECDSA secp256k1>"
 ### deploy
 
 ```shell
-go run main.go [options] deploy <solファイルのパス> <コンストラクタへの引数>
+go run main.go [options] deploy <solファイルのパス> [コンストラクタへの引数 ...]
 ```
 
 成功すれば、デプロイされたコントラクトアドレスを出力する。
