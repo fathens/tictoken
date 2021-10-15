@@ -25,30 +25,36 @@ func InitByMnemonic(words string) (Seed, error) {
 	return Seed{seed}, err
 }
 
-func (seed Seed) Derive(path string) (Account, error) {
-	a := Account{}
+func (seed Seed) Derive(path string) (*Account, error) {
 	hd, err := accounts.ParseDerivationPath(path)
 	if err != nil {
-		return a, err
+		return nil, err
 	}
 	key, err := bip32.NewMasterKey(seed.bytes)
 	if err != nil {
-		return a, err
+		return nil, err
 	}
 
 	for _, i := range hd {
 		key, err = key.NewChildKey(i)
 		if err != nil {
-			return a, err
+			return nil, err
 		}
 	}
 	prv, err := crypto.ToECDSA(key.Key)
 	if err != nil {
-		return a, err
+		return nil, err
 	}
-	a.PrivateKey = *prv
 
-	return a, nil
+	return &Account{*prv}, nil
+}
+
+func ReadPrivateKey(hex string) (*Account, error) {
+	key, err := crypto.HexToECDSA(hex)
+	if err != nil {
+		return nil, err
+	}
+	return &Account{*key}, nil
 }
 
 func (a Account) PublicKey() ecdsa.PublicKey {
