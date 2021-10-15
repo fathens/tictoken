@@ -51,6 +51,14 @@ func (seed Seed) Derive(path string) (Account, error) {
 	return a, nil
 }
 
+func ReadPrivateKey(hex string) (*Account, error) {
+	key, err := crypto.HexToECDSA(hex)
+	if err != nil {
+		return nil, err
+	}
+	return &Account{*key}, nil
+}
+
 func (a Account) PublicKey() ecdsa.PublicKey {
 	return a.PrivateKey.PublicKey
 }

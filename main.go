@@ -13,6 +13,7 @@ import (
 
 type Config struct {
 	RpcServer string
+	PrivateKey string
 }
 
 func main() {
@@ -30,8 +31,17 @@ func main() {
 	cfg := readConfig(*configFile)
 	fmt.Println("config:", cfg)
 
-	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
-	account := setupAccount(mnemonic, *hdpath)
+	var account wallet.Account
+	if len(cfg.PrivateKey) == 0 {
+		mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
+		account = setupAccount(mnemonic, *hdpath)
+	} else {
+		a, err := wallet.ReadPrivateKey(cfg.PrivateKey)
+		if err != nil {
+			panic(err)
+		}
+		account = *a
+	}
 	fmt.Println("account:", account.Address())
 
 	switch cmd {
