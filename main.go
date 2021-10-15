@@ -88,7 +88,7 @@ func deploy(config Config, account wallet.Account, solc string, args []string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(contractAddr)
+	fmt.Println("Deployed contract address:", contractAddr)
 }
 
 func invoke(config Config, account wallet.Account, args []string) {

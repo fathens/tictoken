@@ -20,11 +20,10 @@ func DeployFromSrc(
 	account wallet.Account,
 	solcCmd, srcPath string,
 	args []string,
-) (common.Address, error) {
-	empty := common.Address{}
+) (*common.Address, error) {
 	contracts, err := compileFile(solcCmd, srcPath)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 	params := make([]interface{}, len(args))
 	for i, s := range args {
@@ -35,7 +34,7 @@ func DeployFromSrc(
 			return deployContract(rpcserver, account, contract, params...)
 		}
 	}
-	return empty, nil
+	panic("Compiled file must exist.")
 }
 
 func compileFile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
@@ -55,35 +54,33 @@ func deployContract(
 	account wallet.Account,
 	contract *compiler.Contract,
 	params ...interface{},
-) (common.Address, error) {
-	empty := common.Address{}
-
+) (*common.Address, error) {
 	rawAbi, err := json.Marshal(contract.Info.AbiDefinition)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 	abi, err := abi.JSON(bytes.NewReader(rawAbi))
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 
 	code := common.FromHex(contract.Code)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 
 	client, err := ethclient.Dial(rpcserver)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 	chainId, err := client.ChainID(context.Background())
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 
 	opts, err := bind.NewKeyedTransactorWithChainID(&account.PrivateKey, chainId)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 
 	contractAddr, tx, bound, err := bind.DeployContract(
@@ -94,9 +91,9 @@ func deployContract(
 		params...,
 	)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
-	fmt.Printf("Tx %v, Contract %v", tx, bound)
+	fmt.Printf("Tx %v, Contract %v\n", tx, bound)
 
-	return contractAddr, nil
+	return &contractAddr, nil
 }
