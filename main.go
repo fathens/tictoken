@@ -13,10 +13,11 @@ import (
 
 type Config struct {
 	RpcServer string
+	PrivateKey string
 }
 
 func main() {
-	configFile := flag.String("config", "config.toml", "Path of config")
+	configFile := flag.String("config", ".config.toml", "Path of config")
 	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
 	solc := flag.String("solc", "solc", "solc command")
 	flag.Parse()
@@ -30,8 +31,17 @@ func main() {
 	cfg := readConfig(*configFile)
 	fmt.Println("config:", cfg)
 
-	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
-	account := setupAccount(mnemonic, *hdpath)
+	var account wallet.Account
+	if len(cfg.PrivateKey) == 0 {
+		mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
+		account = setupAccount(mnemonic, *hdpath)
+	} else {
+		a, err := wallet.ReadPrivateKey(cfg.PrivateKey)
+		if err != nil {
+			panic(err)
+		}
+		account = *a
+	}
 	fmt.Println("account:", account.Address())
 
 	switch cmd {
@@ -64,7 +74,7 @@ func setupAccount(mnemonic, hdpath string) wallet.Account {
 	if err != nil {
 		panic(err)
 	}
-	return account
+	return *account
 }
 
 func deploy(config Config, account wallet.Account, solc string, args []string) {
@@ -78,7 +88,7 @@ func deploy(config Config, account wallet.Account, solc string, args []string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(contractAddr)
+	fmt.Println("Deployed contract address:", contractAddr)
 }
 
 func invoke(config Config, account wallet.Account, args []string) {

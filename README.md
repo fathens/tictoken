@@ -7,14 +7,14 @@ Solidity のソースをコンパイルして ethereum にデプロイするツ�
 main.go を起点とする。
 
 ```shell
-go run main.go [options] <command> [args]
+go run main.go [options] <command> [args ...]
 ```
 
 与えられるオプションは以下の通り
 
 | オプション名 | 説明                      | デフォルト値   |
 | ------------ | ------------------------- | -------------- |
-| --config     | 設定ファイルのパス        | config.toml    |
+| --config     | 設定ファイルのパス        | .config.toml   |
 | --hdpath     | マスターキーからのHDパス  | m/44'/60'/0'/0 |
 | --solc       | Solidity コンパイラのパス | solc           |
 
@@ -32,8 +32,10 @@ go run main.go [options] <command> [args]
 
 ```
 rpcserver = "http://12.34.56.78:8545"
+privatekey = "<hex of ECDSA secp256k1>"
 ```
 
+`privatekey` が存在する場合は Mnemonic よりも優先される。
 
 
 ## コマンド
@@ -41,7 +43,7 @@ rpcserver = "http://12.34.56.78:8545"
 ### deploy
 
 ```shell
-go run main.go [options] deploy <solファイルのパス> <コンストラクタへの引数>
+go run main.go [options] deploy <solファイルのパス> [コンストラクタへの引数 ...]
 ```
 
 成功すれば、デプロイされたコントラクトアドレスを出力する。
