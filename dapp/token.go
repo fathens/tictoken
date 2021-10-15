@@ -2,6 +2,7 @@ package dapp
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -10,10 +11,12 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/fathens/tictoken/wallet"
 )
 
 func DeployFromSrc(
+	rpcserver string,
 	account wallet.Account,
 	solcCmd, srcPath string,
 	args []string,
@@ -29,7 +32,7 @@ func DeployFromSrc(
 	}
 	for key, contract := range contracts {
 		if strings.HasPrefix(key, srcPath) {
-			return deployContract(account, contract, params...)
+			return deployContract(rpcserver, account, contract, params...)
 		}
 	}
 	return empty, nil
@@ -48,11 +51,13 @@ func compileFile(solcCmd, srcPath string) (map[string]*compiler.Contract, error)
 }
 
 func deployContract(
+	rpcserver string,
 	account wallet.Account,
 	contract *compiler.Contract,
 	params ...interface{},
 ) (common.Address, error) {
 	empty := common.Address{}
+
 	rawAbi, err := json.Marshal(contract.Info.AbiDefinition)
 	if err != nil {
 		return empty, err
@@ -67,13 +72,25 @@ func deployContract(
 		return empty, err
 	}
 
-	opts := bind.NewKeyedTransactor(&account.PrivateKey)
+	client, err := ethclient.Dial(rpcserver)
+	if err != nil {
+		return empty, err
+	}
+	chainId, err := client.ChainID(context.Background())
+	if err != nil {
+		return empty, err
+	}
+
+	opts, err := bind.NewKeyedTransactorWithChainID(&account.PrivateKey, chainId)
+	if err != nil {
+		return empty, err
+	}
 
 	contractAddr, tx, bound, err := bind.DeployContract(
 		opts,
 		abi,
 		code,
-		nil,
+		client,
 		params...,
 	)
 	if err != nil {

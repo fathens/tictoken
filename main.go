@@ -28,11 +28,11 @@ func main() {
 	args := fullArgs[1:]
 
 	cfg := readConfig(*configFile)
-	fmt.Println("config =", cfg)
+	fmt.Println("config:", cfg)
 
 	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
 	account := setupAccount(mnemonic, *hdpath)
-	fmt.Println(account.Address())
+	fmt.Println("account:", account.Address())
 
 	switch cmd {
 	case "deploy": deploy(cfg, account, *solc, args)
@@ -74,7 +74,7 @@ func deploy(config Config, account wallet.Account, solc string, args []string) {
 	}
 	fileName := args[0]
 
-	contractAddr, err := dapp.DeployFromSrc(account, solc, fileName, args[1:])
+	contractAddr, err := dapp.DeployFromSrc(config.RpcServer, account, solc, fileName, args[1:])
 	if err != nil {
 		panic(err)
 	}
