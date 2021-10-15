@@ -17,7 +17,7 @@ type Config struct {
 }
 
 func main() {
-	configFile := flag.String("config", "config.toml", "Path of config")
+	configFile := flag.String("config", ".config.toml", "Path of config")
 	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
 	solc := flag.String("solc", "solc", "solc command")
 	flag.Parse()
