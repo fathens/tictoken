@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: if [ "$((gofmt -s -d . | tee /dev/stderr) | wc -l)" -gt 0 ]; then exit 1; fi
+      - run: [ "$((gofmt -s -d . | tee /dev/stderr) | wc -l)" -le 0 ] || exit 1
 
   lint:
     needs: setup
