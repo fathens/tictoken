@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/fathens/tictoken/dapp"
 	"github.com/fathens/tictoken/wallet"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -20,23 +20,25 @@ func main() {
 	hdpath := flag.String("hdpath", wallet.DefaultPath, "HDPath")
 	solc := flag.String("solc", "solc", "solc command")
 	flag.Parse()
-	args := flag.Args()
-	if len(args) < 1 {
-		panic("No filename supplied.")
+	fullArgs := flag.Args()
+	if len(fullArgs) < 1 {
+		panic("command name (deploy or invoke) must be supplied.")
 	}
-	fileName := args[0]
+	cmd := fullArgs[0]
+	args := fullArgs[1:]
+
 	cfg := readConfig(*configFile)
-	fmt.Println("config =", cfg)
+	fmt.Println("config:", cfg)
 
 	mnemonic := os.Getenv("TICTOKEN_MNEMONIC")
 	account := setupAccount(mnemonic, *hdpath)
-	fmt.Println(account.Address())
+	fmt.Println("account:", account.Address())
 
-	contracts, err := compile(*solc, fileName)
-	if err != nil {
-		panic(err)
+	switch cmd {
+	case "deploy": deploy(cfg, account, *solc, args)
+	case "invoke": invoke(cfg, account, args)
+	default: panic(fmt.Sprintf("Unsupported command: %v", cmd))
 	}
-	fmt.Println(contracts)
 }
 
 func readConfig(path string) Config {
@@ -65,14 +67,20 @@ func setupAccount(mnemonic, hdpath string) wallet.Account {
 	return account
 }
 
-func compile(solcCmd, srcPath string) (map[string]*compiler.Contract, error) {
-	solidity, err := compiler.SolidityVersion(solcCmd)
-	if err != nil {
-		return nil, err
+func deploy(config Config, account wallet.Account, solc string, args []string) {
+	fmt.Println("Exec deploy command: ", args)
+	if len(args) < 1 {
+		panic("filename must be supplied.")
 	}
-	contracts, err := compiler.CompileSolidity(solidity.Path, srcPath)
+	fileName := args[0]
+
+	contractAddr, err := dapp.DeployFromSrc(config.RpcServer, account, solc, fileName, args[1:])
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return contracts, nil
+	fmt.Println(contractAddr)
+}
+
+func invoke(config Config, account wallet.Account, args []string) {
+	fmt.Println("Exec invoke command: ", args)
 }

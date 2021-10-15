@@ -17,7 +17,7 @@ type Seed struct {
 }
 
 type Account struct {
-	privateKey ecdsa.PrivateKey
+	PrivateKey ecdsa.PrivateKey
 }
 
 func InitByMnemonic(words string) (Seed, error) {
@@ -46,13 +46,13 @@ func (seed Seed) Derive(path string) (Account, error) {
 	if err != nil {
 		return a, err
 	}
-	a.privateKey = *prv
+	a.PrivateKey = *prv
 
 	return a, nil
 }
 
 func (a Account) PublicKey() ecdsa.PublicKey {
-	return a.privateKey.PublicKey
+	return a.PrivateKey.PublicKey
 }
 
 func (a Account) Address() common.Address {
