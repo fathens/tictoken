@@ -18,10 +18,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - uses: golangci/golangci-lint-action@v2
-
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
       - name: Build
         run: go build ./...
 
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: golangci/golangci-lint-action@v2
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
       - name: Test
         run: go test ./... -v
