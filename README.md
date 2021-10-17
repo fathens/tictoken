@@ -47,3 +47,14 @@ go run main.go [options] deploy <solファイルのパス> [コンストラク�
 ```
 
 成功すれば、デプロイされたコントラクトアドレスを出力する。
+
+### invoke
+
+```shell
+go run main.go [options] invoke <contract address> <ABIファイルのパス> <メソッド名> [メソッドへの引数 ...]
+```
+
+* ABI ファイルは JSON 形式であること。
+* 引数の型は今のところ `string` と `address` のみをサポートしている。
+
+成功すれば、戻り値を出力する。
