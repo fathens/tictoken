@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/fathens/tictoken/dapp"
 	"github.com/fathens/tictoken/wallet"
 	"github.com/pelletier/go-toml/v2"
@@ -96,4 +97,16 @@ func deploy(config Config, account wallet.Account, solc string, args []string) {
 
 func invoke(config Config, account wallet.Account, args []string) {
 	fmt.Println("Exec invoke command: ", args)
+	if len(args) < 3 {
+		panic("contract address and ABI json file and method name must be supplied.")
+	}
+	conAddr := common.HexToAddress(args[0])
+	abiFile := args[1]
+	methodName := args[2]
+
+	results, err := dapp.Invoke(config.RpcServer, account, conAddr, methodName, abiFile, args[3:])
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Results:", results)
 }
