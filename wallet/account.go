@@ -10,7 +10,7 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
-const DefaultPath = "m/44'/60'/0'/0"
+const DefaultPath = "m/44'/60'/0'/0/0"
 
 type Seed struct {
 	bytes []byte
